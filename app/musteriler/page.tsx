@@ -10,41 +10,29 @@ const HIZMET_LISTESI = [
   ...PAKETLER.map((p) => `${p.ad} Paketi`),
 ];
 
-const BOSH_FORM: Omit<Musteri, "id"> = {
-  ad: "",
-  telefon: "",
+const EMPTY: Omit<Musteri, "id"> = {
+  ad: "", telefon: "",
   sonGelisTarihi: new Date().toISOString().split("T")[0],
-  alinanHizmet: "",
-  odeme: 0,
-  notlar: "",
-  sadikMusteri: false,
-  toplamZiyaret: 1,
-  toplamHarcama: 0,
+  alinanHizmet: "", odeme: 0, notlar: "",
+  sadikMusteri: false, toplamZiyaret: 1, toplamHarcama: 0,
 };
 
 export default function MusterilerSayfasi() {
-  const [musteriler, setMusteriler] = useState<Musteri[]>([]);
+  const [list, setList] = useState<Musteri[]>([]);
   const [arama, setArama] = useState("");
-  const [formAcik, setFormAcik] = useState(false);
-  const [form, setForm] = useState<Omit<Musteri, "id">>(BOSH_FORM);
-  const [duzenlenenId, setDuzenlenenId] = useState<string | null>(null);
-  const [silOnayi, setSilOnayi] = useState<string | null>(null);
+  const [modalAcik, setModalAcik] = useState(false);
+  const [form, setForm] = useState<Omit<Musteri, "id">>(EMPTY);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [silId, setSilId] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMusteriler(getMusteriler());
-  }, []);
+  useEffect(() => { setList(getMusteriler()); }, []);
+  const refresh = () => setList(getMusteriler());
 
-  const yenile = () => setMusteriler(getMusteriler());
-
-  const filtrelenmis = musteriler.filter(
-    (m) =>
-      m.ad.toLowerCase().includes(arama.toLowerCase()) ||
-      m.telefon.includes(arama)
+  const filtered = list.filter(
+    (m) => m.ad.toLowerCase().includes(arama.toLowerCase()) || m.telefon.includes(arama)
   );
 
-  const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const set = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setForm((p) => ({
       ...p,
@@ -52,331 +40,246 @@ export default function MusterilerSayfasi() {
     }));
   };
 
-  const handleKaydet = () => {
-    const musteri: Musteri = {
-      id: duzenlenenId || generateId(),
-      ...form,
-      toplamHarcama: form.toplamHarcama || form.odeme,
-    };
-    saveMusteri(musteri);
-    yenile();
-    setFormAcik(false);
-    setDuzenlenenId(null);
-    setForm(BOSH_FORM);
+  const save = () => {
+    saveMusteri({ id: editId || generateId(), ...form, toplamHarcama: form.toplamHarcama || form.odeme });
+    refresh(); setModalAcik(false); setEditId(null); setForm(EMPTY);
   };
 
-  const handleDuzenle = (m: Musteri) => {
-    setForm({ ...m });
-    setDuzenlenenId(m.id);
-    setFormAcik(true);
-  };
+  const edit = (m: Musteri) => { setForm({ ...m }); setEditId(m.id); setModalAcik(true); };
+  const del  = (id: string) => { deleteMusteri(id); setSilId(null); refresh(); };
 
-  const handleSil = (id: string) => {
-    deleteMusteri(id);
-    setSilOnayi(null);
-    yenile();
-  };
-
-  const sadikSayisi = musteriler.filter((m) => m.sadikMusteri).length;
+  const sadik = list.filter((m) => m.sadikMusteri).length;
+  const toplamHarcama = list.reduce((s, m) => s + m.toplamHarcama, 0);
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-6">
+    <div className="max-w-lg mx-auto px-5 py-7">
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-black text-white mb-1">
-            Müşteriler
-          </h1>
-          <p className="text-[#666] text-xs">
-            {musteriler.length} müşteri · {sadikSayisi} sadık
-          </p>
+        <div className="section-header" style={{ marginBottom:0 }}>
+          <div className="section-label">✦ Müşteri Yönetimi</div>
+          <h1 className="section-title">Müşteriler</h1>
+          <div className="section-underline" />
         </div>
         <button
-          onClick={() => { setFormAcik(true); setDuzenlenenId(null); setForm(BOSH_FORM); }}
-          style={{ background: "linear-gradient(135deg, #FFD700, #B8960C)", color: "#000" }}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-xs shadow-lg active:scale-95 transition-all"
+          onClick={() => { setModalAcik(true); setEditId(null); setForm(EMPTY); }}
+          style={{
+            background:"linear-gradient(135deg,#FFD700,#d4a843)",
+            color:"#000", fontWeight:800, fontSize:12,
+            padding:"9px 14px", borderRadius:50, border:"none",
+            cursor:"pointer", flexShrink:0,
+            boxShadow:"0 3px 12px rgba(212,168,67,0.3)",
+          }}
         >
-          + Müşteri Ekle
+          + Ekle
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2.5 mb-6">
+      <div className="grid grid-cols-3 gap-2 mb-5">
         {[
-          { rakam: musteriler.length, etiket: "Toplam", ikon: "👥" },
-          { rakam: sadikSayisi, etiket: "Sadık", ikon: "💛" },
-          {
-            rakam:
-              musteriler.length > 0
-                ? Math.round(
-                    musteriler.reduce((s, m) => s + m.toplamHarcama, 0) / musteriler.length
-                  )
-                : 0,
-            etiket: "Ort. Harcama",
-            ikon: "💰",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.etiket}
-            style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 14 }}
-            className="p-3 text-center"
-          >
-            <div className="text-xl mb-1">{stat.ikon}</div>
-            <div style={{ color: "#FFD700" }} className="text-lg font-black">
-              {stat.rakam}
-            </div>
-            <div className="text-[#666] text-xs">{stat.etiket}</div>
+          { v: list.length, l: "Toplam", i: "👥" },
+          { v: sadik, l: "Sadık", i: "💛" },
+          { v: list.length > 0 ? `${Math.round(toplamHarcama / list.length).toLocaleString("tr-TR")}₺` : "0₺", l: "Ort. Harcama", i: "💰" },
+        ].map((s) => (
+          <div key={s.l} className="stat-card">
+            <div style={{ fontSize:20, marginBottom:5 }}>{s.i}</div>
+            <div style={{ fontSize:18, fontWeight:900, color:"#d4a843" }}>{s.v}</div>
+            <div style={{ fontSize:9, color:"#505050", marginTop:2, letterSpacing:"0.5px" }}>{s.l}</div>
           </div>
         ))}
       </div>
 
       {/* Search */}
-      <div className="relative mb-5">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#555]">🔍</span>
+      <div style={{ position:"relative", marginBottom:18 }}>
+        <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"#404040", fontSize:15 }}>🔍</span>
         <input
           value={arama}
           onChange={(e) => setArama(e.target.value)}
           placeholder="İsim veya telefon ara..."
-          className="input-dark pl-9"
+          className="field"
+          style={{ paddingLeft:40 }}
         />
       </div>
 
-      {/* Customer list */}
-      <div className="flex flex-col gap-3">
-        {filtrelenmis.length === 0 ? (
-          <div className="text-center py-12 text-[#555]">
-            <div className="text-4xl mb-3">👥</div>
-            <div className="font-semibold">Müşteri bulunamadı</div>
-            <div className="text-xs mt-1">Yeni müşteri eklemek için + butonuna tıklayın</div>
+      {/* List */}
+      <div className="flex flex-col gap-2.5">
+        {filtered.length === 0 ? (
+          <div style={{ textAlign:"center", padding:"48px 0", color:"#404040" }}>
+            <div style={{ fontSize:40, marginBottom:10 }}>👥</div>
+            <div style={{ fontWeight:600, fontSize:14 }}>Müşteri bulunamadı</div>
+            <div style={{ fontSize:12, marginTop:4 }}>+ butonu ile müşteri ekleyin</div>
           </div>
-        ) : (
-          filtrelenmis.map((m) => (
-            <div
-              key={m.id}
-              style={{
-                background: "#111",
-                border: `1px solid ${m.sadikMusteri ? "rgba(255,215,0,0.25)" : "#1f1f1f"}`,
-                borderRadius: 16,
-              }}
-            >
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div
-                      style={{
-                        background: m.sadikMusteri
-                          ? "linear-gradient(135deg, #FFD700, #B8960C)"
-                          : "#222",
-                        width: 44,
-                        height: 44,
-                        borderRadius: "50%",
-                        flexShrink: 0,
-                      }}
-                      className="flex items-center justify-center font-black text-sm"
-                    >
-                      <span style={{ color: m.sadikMusteri ? "#000" : "#666" }}>
-                        {m.ad.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-bold text-white text-sm flex items-center gap-1.5">
-                        {m.ad}
-                        {m.sadikMusteri && (
-                          <span
-                            style={{ background: "rgba(255,215,0,0.15)", color: "#FFD700", fontSize: 9 }}
-                            className="px-1.5 py-0.5 rounded-full font-bold tracking-wider"
-                          >
-                            ★ SADIK
-                          </span>
-                        )}
-                      </div>
-                      <a
-                        href={`tel:${m.telefon}`}
-                        style={{ color: "#666" }}
-                        className="text-xs"
-                      >
-                        {m.telefon}
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDuzenle(m)}
-                      style={{ background: "#1a1a1a", color: "#FFD700" }}
-                      className="w-8 h-8 rounded-lg text-sm flex items-center justify-center"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => setSilOnayi(m.id)}
-                      style={{ background: "#1a1a1a", color: "#ff4444" }}
-                      className="w-8 h-8 rounded-lg text-sm flex items-center justify-center"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div style={{ background: "#0f0f0f", borderRadius: 8 }} className="p-2">
-                    <div className="text-[#555] mb-0.5">Son Hizmet</div>
-                    <div className="text-white font-semibold truncate">{m.alinanHizmet || "—"}</div>
-                  </div>
-                  <div style={{ background: "#0f0f0f", borderRadius: 8 }} className="p-2">
-                    <div className="text-[#555] mb-0.5">Son Gelişi</div>
-                    <div className="text-white font-semibold">{m.sonGelisTarihi || "—"}</div>
-                  </div>
-                  <div style={{ background: "#0f0f0f", borderRadius: 8 }} className="p-2">
-                    <div className="text-[#555] mb-0.5">Toplam Ziyaret</div>
-                    <div style={{ color: "#FFD700" }} className="font-black">{m.toplamZiyaret}x</div>
-                  </div>
-                  <div style={{ background: "#0f0f0f", borderRadius: 8 }} className="p-2">
-                    <div className="text-[#555] mb-0.5">Toplam Harcama</div>
-                    <div style={{ color: "#FFD700" }} className="font-black">{m.toplamHarcama.toLocaleString("tr-TR")}₺</div>
-                  </div>
-                </div>
-
-                {m.notlar && (
+        ) : filtered.map((m) => (
+          <div
+            key={m.id}
+            style={{
+              background:"#0e0e0e",
+              border:`1px solid ${m.sadikMusteri ? "rgba(212,168,67,0.2)" : "#1e1e1e"}`,
+              borderRadius:18, overflow:"hidden",
+            }}
+          >
+            <div style={{ padding:16 }}>
+              {/* Top row */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
                   <div
-                    style={{ background: "#0f0f0f", borderRadius: 8, marginTop: 8 }}
-                    className="p-2 text-xs"
+                    style={{
+                      width:44, height:44, borderRadius:13, flexShrink:0,
+                      background: m.sadikMusteri
+                        ? "linear-gradient(135deg,#FFD700,#8a6a1a)"
+                        : "#1a1a1a",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontWeight:900, fontSize:15,
+                      color: m.sadikMusteri ? "#000" : "#505050",
+                    }}
                   >
-                    <span className="text-[#555]">Not: </span>
-                    <span className="text-[#aaa]">{m.notlar}</span>
+                    {m.ad.split(" ").map((n) => n[0]).join("").slice(0,2).toUpperCase()}
                   </div>
-                )}
+                  <div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <span style={{ fontWeight:700, color:"#e0e0e0", fontSize:14 }}>{m.ad}</span>
+                      {m.sadikMusteri && (
+                        <span style={{
+                          background:"rgba(212,168,67,0.1)",
+                          color:"#d4a843",
+                          fontSize:8, fontWeight:900,
+                          padding:"2px 6px", borderRadius:50,
+                          letterSpacing:"1px",
+                        }}>
+                          ★ SADIK
+                        </span>
+                      )}
+                    </div>
+                    <a href={`tel:${m.telefon}`} style={{ color:"#505050", fontSize:11 }}>{m.telefon}</a>
+                  </div>
+                </div>
+                <div style={{ display:"flex", gap:6 }}>
+                  <button
+                    onClick={() => edit(m)}
+                    style={{
+                      width:32, height:32, borderRadius:9, border:"none",
+                      background:"rgba(212,168,67,0.08)", cursor:"pointer",
+                      fontSize:14, display:"flex", alignItems:"center", justifyContent:"center",
+                    }}
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => setSilId(m.id)}
+                    style={{
+                      width:32, height:32, borderRadius:9, border:"none",
+                      background:"rgba(255,77,77,0.08)", cursor:"pointer",
+                      fontSize:14, display:"flex", alignItems:"center", justifyContent:"center",
+                    }}
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
+
+              {/* Stats grid */}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+                {[
+                  { l:"Son Hizmet", v: m.alinanHizmet || "—" },
+                  { l:"Son Geliş", v: m.sonGelisTarihi || "—" },
+                  { l:"Ziyaret", v: `${m.toplamZiyaret}x`, gold:true },
+                  { l:"Toplam Harcama", v: `${m.toplamHarcama.toLocaleString("tr-TR")}₺`, gold:true },
+                ].map((s) => (
+                  <div key={s.l} style={{ background:"#080808", borderRadius:9, padding:"8px 10px" }}>
+                    <div style={{ fontSize:9, color:"#404040", marginBottom:2, letterSpacing:"0.5px" }}>{s.l}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color: s.gold ? "#d4a843" : "#a0a0a0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.v}</div>
+                  </div>
+                ))}
+              </div>
+
+              {m.notlar && (
+                <div style={{ background:"#080808", borderRadius:9, padding:"8px 10px", marginTop:6 }}>
+                  <span style={{ fontSize:9, color:"#404040" }}>NOT: </span>
+                  <span style={{ fontSize:11, color:"#707070" }}>{m.notlar}</span>
+                </div>
+              )}
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
 
-      {/* Add/Edit Modal */}
-      {formAcik && (
+      {/* Modal */}
+      {modalAcik && (
         <div
-          style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
-          className="fixed inset-0 z-50 flex items-end justify-center p-4"
-          onClick={(e) => e.target === e.currentTarget && setFormAcik(false)}
+          style={{ background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", position:"fixed", inset:0, zIndex:50, display:"flex", alignItems:"flex-end", justifyContent:"center", padding:12 }}
+          onClick={(e) => e.target === e.currentTarget && setModalAcik(false)}
         >
           <div
+            className="anim-slide-in"
             style={{
-              background: "#111",
-              border: "1px solid #2a2a2a",
-              borderRadius: "24px 24px 0 0",
+              background:"#0e0e0e", border:"1px solid #242424",
+              borderRadius:"22px 22px 0 0", width:"100%", maxWidth:468,
+              maxHeight:"90vh", overflowY:"auto", paddingBottom:32,
             }}
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto pb-8"
           >
-            <div className="p-5 border-b border-[#1f1f1f] flex items-center justify-between sticky top-0 bg-[#111]">
-              <h2 className="font-black text-white">
-                {duzenlenenId ? "Müşteriyi Düzenle" : "Yeni Müşteri"}
-              </h2>
-              <button
-                onClick={() => setFormAcik(false)}
-                style={{ background: "#1a1a1a", color: "#888" }}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-              >
-                ×
-              </button>
+            <div style={{
+              padding:"16px 18px", borderBottom:"1px solid #161616",
+              display:"flex", alignItems:"center", justifyContent:"space-between",
+              position:"sticky", top:0, background:"#0e0e0e", zIndex:1,
+            }}>
+              <span style={{ fontWeight:800, color:"#e0e0e0", fontSize:16 }}>
+                {editId ? "Müşteriyi Düzenle" : "Yeni Müşteri"}
+              </span>
+              <button onClick={() => setModalAcik(false)} style={{ width:28, height:28, borderRadius:"50%", background:"#1a1a1a", border:"none", color:"#666", fontSize:16, cursor:"pointer" }}>×</button>
             </div>
-            <div className="p-5 flex flex-col gap-4">
+            <div style={{ padding:"18px 18px 0", display:"flex", flexDirection:"column", gap:14 }}>
               {[
-                { name: "ad", label: "Ad Soyad", type: "text", placeholder: "Müşteri adı" },
-                { name: "telefon", label: "Telefon", type: "tel", placeholder: "0 5XX XXX XX XX" },
-                { name: "sonGelisTarihi", label: "Son Geliş Tarihi", type: "date", placeholder: "" },
-                { name: "odeme", label: "Ödeme Tutarı (₺)", type: "number", placeholder: "0" },
-                { name: "toplamZiyaret", label: "Toplam Ziyaret", type: "number", placeholder: "1" },
-                { name: "toplamHarcama", label: "Toplam Harcama (₺)", type: "number", placeholder: "0" },
-              ].map((field) => (
-                <div key={field.name}>
-                  <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
-                    {field.label}
-                  </label>
-                  <input
-                    name={field.name}
-                    type={field.type}
-                    value={(form as Record<string, unknown>)[field.name] as string | number}
-                    onChange={handleFormChange}
-                    placeholder={field.placeholder}
-                    className="input-dark"
-                  />
+                { name:"ad", label:"Ad Soyad", type:"text", placeholder:"Müşteri adı" },
+                { name:"telefon", label:"Telefon", type:"tel", placeholder:"0 5XX XXX XX XX" },
+                { name:"sonGelisTarihi", label:"Son Geliş Tarihi", type:"date", placeholder:"" },
+                { name:"odeme", label:"Ödeme (₺)", type:"number", placeholder:"0" },
+                { name:"toplamZiyaret", label:"Toplam Ziyaret", type:"number", placeholder:"1" },
+                { name:"toplamHarcama", label:"Toplam Harcama (₺)", type:"number", placeholder:"0" },
+              ].map((f) => (
+                <div key={f.name}>
+                  <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:6 }}>{f.label}</label>
+                  <input name={f.name} type={f.type} value={(form as Record<string,unknown>)[f.name] as string|number} onChange={set} placeholder={f.placeholder} className="field" />
                 </div>
               ))}
 
               <div>
-                <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
-                  Alınan Hizmet
-                </label>
-                <select
-                  name="alinanHizmet"
-                  value={form.alinanHizmet}
-                  onChange={handleFormChange}
-                  className="input-dark"
-                  style={{ appearance: "none" }}
-                >
+                <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:6 }}>Alınan Hizmet</label>
+                <select name="alinanHizmet" value={form.alinanHizmet} onChange={set} className="field" style={{ appearance:"none" }}>
                   <option value="">Seçin</option>
-                  {HIZMET_LISTESI.map((h) => (
-                    <option key={h} value={h}>{h}</option>
-                  ))}
+                  {HIZMET_LISTESI.map((h) => <option key={h} value={h}>{h}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
-                  Notlar
-                </label>
-                <textarea
-                  name="notlar"
-                  value={form.notlar}
-                  onChange={handleFormChange}
-                  placeholder="Müşteri hakkında notlar..."
-                  rows={2}
-                  className="input-dark resize-none"
-                />
+                <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:6 }}>Notlar</label>
+                <textarea name="notlar" value={form.notlar} onChange={set} placeholder="Müşteri hakkında notlar..." rows={2} className="field" style={{ resize:"none" }} />
               </div>
 
-              <label className="flex items-center gap-3 cursor-pointer">
+              {/* Toggle */}
+              <div style={{ display:"flex", alignItems:"center", gap:12, padding:"4px 0" }}>
                 <div
+                  className="toggle"
+                  style={{ background: form.sadikMusteri ? "#d4a843" : "#1e1e1e" }}
                   onClick={() => setForm((p) => ({ ...p, sadikMusteri: !p.sadikMusteri }))}
-                  style={{
-                    width: 48,
-                    height: 28,
-                    background: form.sadikMusteri ? "#FFD700" : "#222",
-                    borderRadius: 14,
-                    position: "relative",
-                    transition: "all 0.3s",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                  }}
                 >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 3,
-                      left: form.sadikMusteri ? 23 : 3,
-                      width: 22,
-                      height: 22,
-                      background: "#fff",
-                      borderRadius: "50%",
-                      transition: "all 0.3s",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
-                    }}
-                  />
+                  <div className="toggle-thumb" style={{ left: form.sadikMusteri ? 23 : 3 }} />
                 </div>
-                <span className="text-sm text-white font-semibold">Sadık Müşteri</span>
-              </label>
+                <span style={{ fontSize:13, fontWeight:600, color:"#d0d0d0" }}>Sadık Müşteri</span>
+              </div>
 
               <button
-                onClick={handleKaydet}
+                onClick={save}
                 disabled={!form.ad.trim() || !form.telefon.trim()}
                 style={{
-                  background: form.ad.trim() && form.telefon.trim()
-                    ? "linear-gradient(135deg, #FFD700, #B8960C)"
-                    : "#1a1a1a",
-                  color: form.ad.trim() && form.telefon.trim() ? "#000" : "#444",
+                  padding:"16px", borderRadius:50,
+                  background: form.ad.trim() && form.telefon.trim() ? "linear-gradient(135deg,#FFD700,#d4a843)" : "#161616",
+                  color: form.ad.trim() && form.telefon.trim() ? "#000" : "#404040",
+                  fontWeight:800, fontSize:15, border:"none", cursor: form.ad.trim() ? "pointer" : "not-allowed",
+                  marginTop:4,
                 }}
-                className="w-full py-4 rounded-2xl font-black text-sm transition-all"
               >
-                {duzenlenenId ? "Güncelle" : "Müşteri Ekle"}
+                {editId ? "Güncelle" : "Müşteri Ekle"}
               </button>
             </div>
           </div>
@@ -384,33 +287,15 @@ export default function MusterilerSayfasi() {
       )}
 
       {/* Delete confirm */}
-      {silOnayi && (
-        <div
-          style={{ background: "rgba(0,0,0,0.85)" }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-6"
-        >
-          <div
-            style={{ background: "#111", border: "1px solid #2a2a2a", borderRadius: 20 }}
-            className="w-full max-w-sm p-6 text-center"
-          >
-            <div className="text-4xl mb-3">⚠️</div>
-            <h3 className="font-black text-white mb-2">Müşteriyi Sil</h3>
-            <p className="text-[#888] text-sm mb-5">Bu işlem geri alınamaz.</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setSilOnayi(null)}
-                style={{ background: "#1a1a1a", color: "#aaa", border: "1px solid #2a2a2a" }}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm"
-              >
-                İptal
-              </button>
-              <button
-                onClick={() => handleSil(silOnayi)}
-                style={{ background: "rgba(255,68,68,0.2)", color: "#ff4444", border: "1px solid rgba(255,68,68,0.3)" }}
-                className="flex-1 py-3 rounded-xl font-semibold text-sm"
-              >
-                Sil
-              </button>
+      {silId && (
+        <div style={{ background:"rgba(0,0,0,0.85)", position:"fixed", inset:0, zIndex:50, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+          <div style={{ background:"#0e0e0e", border:"1px solid #242424", borderRadius:20, padding:24, maxWidth:300, width:"100%", textAlign:"center" }}>
+            <div style={{ fontSize:36, marginBottom:10 }}>⚠️</div>
+            <div style={{ fontWeight:800, color:"#e0e0e0", marginBottom:6 }}>Müşteriyi Sil</div>
+            <div style={{ color:"#606060", fontSize:13, marginBottom:20 }}>Bu işlem geri alınamaz.</div>
+            <div style={{ display:"flex", gap:10 }}>
+              <button onClick={() => setSilId(null)} style={{ flex:1, padding:"12px", borderRadius:50, background:"#161616", border:"1px solid #1e1e1e", color:"#888", fontWeight:600, cursor:"pointer" }}>İptal</button>
+              <button onClick={() => del(silId)} style={{ flex:1, padding:"12px", borderRadius:50, background:"rgba(255,77,77,0.15)", border:"1px solid rgba(255,77,77,0.3)", color:"#ff4d4d", fontWeight:700, cursor:"pointer" }}>Sil</button>
             </div>
           </div>
         </div>

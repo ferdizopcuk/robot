@@ -4,74 +4,59 @@ import { HIZMETLER, PAKETLER, SALON_INFO } from "@/lib/data";
 import Link from "next/link";
 
 export default function HizmetlerSayfasi() {
-  const whatsappUrl = `https://wa.me/${SALON_INFO.phone}?text=Merhaba%2C%20hizmetleriniz%20hakkında%20bilgi%20almak%20istiyorum.`;
+  const WA = `https://wa.me/${SALON_INFO.phone}?text=Merhaba%2C%20hizmetleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.`;
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-6">
-      {/* Header */}
-      <div className="mb-7">
-        <span
-          style={{
-            background: "rgba(255,215,0,0.1)",
-            border: "1px solid rgba(255,215,0,0.3)",
-            color: "#FFD700",
-          }}
-          className="text-xs font-bold px-3 py-1 rounded-full tracking-widest uppercase"
-        >
-          ✦ Profesyonel Hizmetler
-        </span>
-        <h1
-          style={{ fontFamily: "'Playfair Display', serif" }}
-          className="text-3xl font-black text-white mt-3 mb-1"
-        >
-          Hizmetlerimiz
-        </h1>
-        <p className="text-[#888] text-sm">
-          Her müşterimize özel, profesyonel bakım ve stil hizmetleri
+    <div className="max-w-lg mx-auto px-5 py-7">
+
+      <div className="section-header">
+        <div className="section-label">✦ Profesyonel Hizmetler</div>
+        <h1 className="section-title">Hizmetlerimiz</h1>
+        <div className="section-underline" />
+        <p style={{ color:"#606060", fontSize:12, marginTop:8 }}>
+          Her müşterimize özel, kişiye uyarlanmış bakım hizmetleri
         </p>
-        <div
-          style={{
-            width: 40,
-            height: 2,
-            background: "linear-gradient(135deg, #FFD700, #B8960C)",
-            marginTop: 10,
-          }}
-        />
       </div>
 
-      {/* Services Grid */}
-      <div className="flex flex-col gap-2.5 mb-10">
+      {/* Services list */}
+      <div className="flex flex-col gap-2 mb-10">
         {HIZMETLER.map((h, i) => (
           <div
             key={h.id}
+            className="hover-lift"
             style={{
-              background: "#111",
-              border: "1px solid #1f1f1f",
-              borderRadius: 16,
-              transition: "all 0.2s",
+              background:"#0e0e0e",
+              border:"1px solid #1e1e1e",
+              borderRadius:16,
+              display:"flex",
+              alignItems:"center",
+              gap:14,
+              padding:"14px 16px",
+              cursor:"pointer",
             }}
-            className="flex items-center gap-4 p-4 card-hover"
           >
             <div
               style={{
-                background: "rgba(255,215,0,0.08)",
-                border: "1px solid rgba(255,215,0,0.15)",
-                width: 50,
-                height: 50,
-                borderRadius: 14,
-                flexShrink: 0,
+                width:48, height:48, borderRadius:14, flexShrink:0,
+                background:"rgba(212,168,67,0.06)",
+                border:"1px solid rgba(212,168,67,0.12)",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:22,
               }}
-              className="flex items-center justify-center text-2xl"
             >
               {h.ikon}
             </div>
-            <div className="flex-1">
-              <div className="font-bold text-white text-sm">{h.ad}</div>
-              <div className="text-[#666] text-xs mt-0.5">{h.aciklama}</div>
+            <div className="flex-1 min-w-0">
+              <div style={{ fontWeight:700, color:"#e0e0e0", fontSize:14 }}>{h.ad}</div>
+              <div style={{ fontSize:11, color:"#555", marginTop:2 }}>{h.aciklama}</div>
             </div>
             <div
-              style={{ color: "#FFD700", opacity: 0.5 }}
-              className="text-lg font-black"
+              style={{
+                fontSize:11, fontWeight:800,
+                color:"rgba(212,168,67,0.3)",
+                letterSpacing:"1px",
+                flexShrink:0,
+              }}
             >
               {String(i + 1).padStart(2, "0")}
             </div>
@@ -79,111 +64,121 @@ export default function HizmetlerSayfasi() {
         ))}
       </div>
 
+      {/* Section divider */}
+      <div className="flex items-center gap-3 mb-6" style={{ opacity:0.3 }}>
+        <div style={{ flex:1, height:1, background:"linear-gradient(90deg,transparent,#d4a843)" }} />
+        <span style={{ color:"#d4a843", fontSize:12 }}>✦</span>
+        <div style={{ flex:1, height:1, background:"linear-gradient(90deg,#d4a843,transparent)" }} />
+      </div>
+
       {/* Packages */}
-      <div className="mb-8">
-        <h2 className="text-xl font-black text-white mb-1">Premium Paketler</h2>
-        <p className="text-[#666] text-xs mb-4">Özel indirimli kombinasyonlar</p>
-        <div className="flex flex-col gap-3">
-          {PAKETLER.map((paket) => (
-            <div
-              key={paket.id}
-              style={{
-                background: paket.popular ? "linear-gradient(145deg, #1a1500, #1f1a00)" : "#111",
-                border: `1px solid ${paket.popular ? paket.renk + "60" : "#1f1f1f"}`,
-                borderRadius: 18,
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              {paket.popular && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2,
-                    background: `linear-gradient(90deg, transparent, ${paket.renk}, transparent)`,
-                  }}
-                />
-              )}
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    {paket.popular && (
-                      <span
-                        style={{
-                          background: paket.renk,
-                          color: "#000",
-                          fontSize: 9,
-                          fontWeight: 800,
-                        }}
-                        className="px-2 py-0.5 rounded-full tracking-widest uppercase block mb-1.5"
-                      >
-                        ★ EN POPÜLER
-                      </span>
-                    )}
-                    <span
-                      style={{
-                        background: `linear-gradient(135deg, ${paket.renk}, ${paket.renk2})`,
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        backgroundClip: "text",
-                        fontFamily: "'Playfair Display', serif",
-                      }}
-                      className="text-xl font-black"
-                    >
-                      {paket.ad}
+      <div className="section-header">
+        <div className="section-label">✦ Avantajlı Fiyatlar</div>
+        <h2 className="section-title">Premium Paketler</h2>
+        <div className="section-underline" />
+      </div>
+
+      <div className="flex flex-col gap-3 mb-8">
+        {PAKETLER.map((p) => (
+          <div
+            key={p.id}
+            style={{
+              background: p.popular ? "linear-gradient(145deg,#141200,#0f0e00)" : "#0e0e0e",
+              border:`1px solid ${p.popular ? "rgba(255,215,0,0.3)" : "#1e1e1e"}`,
+              borderRadius:20, overflow:"hidden", position:"relative",
+            }}
+          >
+            {p.popular && (
+              <div style={{
+                position:"absolute", top:0, left:0, right:0, height:2,
+                background:"linear-gradient(90deg,transparent,#FFD700 30%,#d4a843 70%,transparent)",
+              }} />
+            )}
+            <div style={{ padding:"18px 18px 16px" }}>
+              <div className="flex items-start justify-between mb-1">
+                <div>
+                  {p.popular && (
+                    <span style={{
+                      background:"linear-gradient(135deg,#FFD700,#d4a843)",
+                      color:"#000", fontSize:8, fontWeight:900,
+                      padding:"2px 8px", borderRadius:50,
+                      letterSpacing:"1px", textTransform:"uppercase",
+                      display:"inline-block", marginBottom:5,
+                    }}>
+                      ★ En Çok Tercih Edilen
                     </span>
-                    <div className="text-[#666] text-xs mt-0.5">{paket.aciklama}</div>
+                  )}
+                  <div
+                    style={{
+                      fontFamily:"'Playfair Display',Georgia,serif",
+                      fontSize:20, fontWeight:900,
+                      background:`linear-gradient(135deg,${p.renk},${p.renk2})`,
+                      WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+                      backgroundClip:"text",
+                    }}
+                  >
+                    {p.ad}
                   </div>
-                  <div className="text-right">
-                    <div style={{ color: paket.renk }} className="text-3xl font-black">
-                      {paket.fiyat}
-                      <span className="text-lg">₺</span>
-                    </div>
-                  </div>
+                  <div style={{ fontSize:11, color:"#505050", marginTop:2 }}>{p.aciklama}</div>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {paket.hizmetler.map((h) => (
-                    <span
-                      key={h}
-                      style={{
-                        background: `${paket.renk}15`,
-                        border: `1px solid ${paket.renk}30`,
-                        color: "#ccc",
-                      }}
-                      className="text-xs px-2.5 py-1 rounded-full"
-                    >
-                      ✓ {h}
-                    </span>
-                  ))}
+                <div style={{ textAlign:"right", flexShrink:0, marginLeft:12 }}>
+                  <span style={{
+                    fontSize:30, fontWeight:900, lineHeight:1,
+                    background:`linear-gradient(135deg,${p.renk},${p.renk2})`,
+                    WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+                    backgroundClip:"text",
+                  }}>
+                    {p.fiyat}
+                  </span>
+                  <span style={{ color:"#505050", fontSize:14 }}> ₺</span>
                 </div>
               </div>
+              <div style={{ height:1, background:"rgba(255,255,255,0.04)", margin:"12px 0" }} />
+              <div className="flex flex-wrap gap-1.5">
+                {p.hizmetler.map((h) => (
+                  <span key={h} style={{
+                    background:`${p.renk}10`,
+                    border:`1px solid ${p.renk}25`,
+                    color:"#909090",
+                    fontSize:10, fontWeight:500,
+                    padding:"4px 9px", borderRadius:50,
+                  }}>
+                    ✓ {h}
+                  </span>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* CTAs */}
       <div className="flex flex-col gap-3">
         <Link
           href="/randevu"
-          style={{ background: "linear-gradient(135deg, #FFD700, #B8960C)", color: "#000" }}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition-all"
+          style={{
+            display:"flex", alignItems:"center", justifyContent:"center",
+            gap:8, padding:"16px", borderRadius:50,
+            background:"linear-gradient(135deg,#FFD700,#d4a843,#8a6a1a)",
+            color:"#000", fontWeight:800, fontSize:15,
+            textDecoration:"none",
+            boxShadow:"0 4px 24px rgba(212,168,67,0.3)",
+          }}
         >
           📅 Hemen Randevu Al
         </Link>
         <a
-          href={whatsappUrl}
+          href={WA}
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            background: "rgba(37,211,102,0.08)",
-            border: "2px solid rgba(37,211,102,0.3)",
-            color: "#25D366",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            gap:8, padding:"14px", borderRadius:50,
+            background:"rgba(37,211,102,0.06)",
+            border:"1.5px solid rgba(37,211,102,0.3)",
+            color:"#25D366", fontWeight:700, fontSize:14,
+            textDecoration:"none",
           }}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all"
         >
           💬 WhatsApp&apos;tan Bilgi Al
         </a>

@@ -4,316 +4,233 @@ import { useState } from "react";
 import { HIZMETLER, PAKETLER, SALON_INFO, RANDEVU_SAATLERI } from "@/lib/data";
 import { saveRandevu, generateId } from "@/lib/storage";
 
-const TUMHIZMETLER = [
-  ...HIZMETLER.map((h) => h.ad),
-  ...PAKETLER.map((p) => `${p.ad} Paketi`),
-];
-
 export default function RandevuSayfasi() {
   const [form, setForm] = useState({
-    ad: "",
-    telefon: "",
-    hizmet: "",
-    tarih: "",
-    saat: "",
-    not: "",
+    ad: "", telefon: "", hizmet: "", tarih: "", saat: "", not: "",
   });
-  const [gonderildi, setGonderildi] = useState(false);
+  const [done, setDone] = useState(false);
 
-  const bugün = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0];
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  const set = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const buildWhatsApp = () => {
+  const waUrl = () => {
     const msg =
-      `*YENİ RANDEVU TALEBİ*%0A` +
-      `━━━━━━━━━━━━━━━━━━━━%0A` +
+      `*YENİ RANDEVU TALEBİ* ✂️%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━%0A` +
       `👤 *Ad Soyad:* ${form.ad}%0A` +
       `📞 *Telefon:* ${form.telefon}%0A` +
       `✂️ *Hizmet:* ${form.hizmet}%0A` +
       `📅 *Tarih:* ${form.tarih}%0A` +
       `🕐 *Saat:* ${form.saat}%0A` +
       (form.not ? `📝 *Not:* ${form.not}%0A` : "") +
-      `━━━━━━━━━━━━━━━━━━━━%0A` +
-      `_Saloon Ferdi Zopcuk Randevu Sistemi_`;
+      `━━━━━━━━━━━━━━━━━━━━━%0A` +
+      `_Saloon Ferdi Zopcuk · Adana Çukurova_`;
     return `https://wa.me/${SALON_INFO.phone}?text=${msg}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     saveRandevu({
-      id: generateId(),
-      ad: form.ad,
-      telefon: form.telefon,
-      hizmet: form.hizmet,
-      tarih: form.tarih,
-      saat: form.saat,
-      not: form.not,
-      durum: "bekliyor",
+      id: generateId(), ad: form.ad, telefon: form.telefon,
+      hizmet: form.hizmet, tarih: form.tarih, saat: form.saat,
+      not: form.not, durum: "bekliyor",
       olusturmaTarihi: new Date().toISOString(),
     });
-    setGonderildi(true);
-    window.open(buildWhatsApp(), "_blank");
+    setDone(true);
+    window.open(waUrl(), "_blank");
   };
 
-  const isValid =
-    form.ad.trim() &&
-    form.telefon.trim() &&
-    form.hizmet &&
-    form.tarih &&
-    form.saat;
+  const valid = form.ad.trim() && form.telefon.trim() && form.hizmet && form.tarih && form.saat;
 
-  if (gonderildi) {
-    return (
-      <div className="max-w-lg mx-auto px-5 py-12 flex flex-col items-center text-center">
-        <div
-          style={{
-            background: "rgba(255,215,0,0.1)",
-            border: "2px solid rgba(255,215,0,0.3)",
-            width: 90,
-            height: 90,
-            borderRadius: "50%",
-          }}
-          className="flex items-center justify-center text-5xl mb-6"
-        >
-          ✅
-        </div>
-        <h2
-          style={{ fontFamily: "'Playfair Display', serif", color: "#FFD700" }}
-          className="text-2xl font-black mb-3"
-        >
-          Randevunuz Alındı!
-        </h2>
-        <p className="text-[#aaa] text-sm leading-relaxed mb-2">
-          WhatsApp mesajınız hazırlandı. Onay için salonumuzu aramanız veya WhatsApp mesajını
-          göndermeniz yeterlidir.
-        </p>
-        <div
-          style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 16 }}
-          className="w-full p-4 mt-4 mb-8 text-left"
-        >
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="text-[#666]">Ad:</div>
-            <div className="text-white font-semibold">{form.ad}</div>
-            <div className="text-[#666]">Hizmet:</div>
-            <div className="text-white font-semibold">{form.hizmet}</div>
-            <div className="text-[#666]">Tarih:</div>
-            <div className="text-white font-semibold">{form.tarih}</div>
-            <div className="text-[#666]">Saat:</div>
-            <div className="text-white font-semibold">{form.saat}</div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 w-full">
-          <a
-            href={buildWhatsApp()}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ background: "rgba(37,211,102,0.1)", border: "2px solid rgba(37,211,102,0.4)", color: "#25D366" }}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm"
-          >
-            💬 WhatsApp Mesajı Gönder
-          </a>
-          <button
-            onClick={() => {
-              setGonderildi(false);
-              setForm({ ad: "", telefon: "", hizmet: "", tarih: "", saat: "", not: "" });
-            }}
-            style={{ background: "#111", border: "1px solid #1f1f1f", color: "#aaa" }}
-            className="w-full py-4 rounded-2xl font-semibold text-sm"
-          >
-            Yeni Randevu Al
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-lg mx-auto px-5 py-6">
-      {/* Header */}
-      <div className="mb-7">
-        <span
-          style={{
-            background: "rgba(255,215,0,0.1)",
-            border: "1px solid rgba(255,215,0,0.3)",
-            color: "#FFD700",
-          }}
-          className="text-xs font-bold px-3 py-1 rounded-full tracking-widest uppercase"
-        >
-          ✦ Online Randevu
-        </span>
-        <h1
-          style={{ fontFamily: "'Playfair Display', serif" }}
-          className="text-3xl font-black text-white mt-3 mb-1"
-        >
-          Randevu Al
-        </h1>
-        <p className="text-[#888] text-sm">
-          Formu doldurun, WhatsApp üzerinden onaylayın
-        </p>
-        <div
-          style={{
-            width: 40,
-            height: 2,
-            background: "linear-gradient(135deg, #FFD700, #B8960C)",
-            marginTop: 10,
-          }}
-        />
-      </div>
-
-      {/* Working hours notice */}
+  if (done) return (
+    <div className="max-w-lg mx-auto px-5 py-12 flex flex-col items-center text-center">
       <div
         style={{
-          background: "rgba(255,215,0,0.05)",
-          border: "1px solid rgba(255,215,0,0.15)",
-          borderRadius: 12,
+          width:88, height:88, borderRadius:"50%",
+          background:"rgba(39,201,130,0.08)",
+          border:"2px solid rgba(39,201,130,0.3)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize:40, marginBottom:24,
         }}
-        className="p-3 mb-6 flex items-start gap-2"
       >
-        <span className="text-base">🕐</span>
-        <div className="text-xs text-[#aaa]">
-          <span style={{ color: "#FFD700" }} className="font-bold block mb-0.5">Çalışma Saatleri</span>
-          <span>{SALON_INFO.workingHours.weekdays}</span>
-          <br />
-          <span>{SALON_INFO.workingHours.sunday}</span>
+        ✅
+      </div>
+      <h2
+        style={{
+          fontFamily:"'Playfair Display',Georgia,serif",
+          fontSize:24, fontWeight:900, color:"#d4a843", marginBottom:10,
+        }}
+      >
+        Randevunuz Alındı!
+      </h2>
+      <p style={{ color:"#888", fontSize:13, lineHeight:1.7, maxWidth:280, marginBottom:6 }}>
+        WhatsApp mesajınız hazırlandı. Onay için mesajı gönderin veya sizi arayalım.
+      </p>
+
+      <div
+        style={{
+          background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:18,
+          padding:18, width:"100%", marginTop:16, marginBottom:24,
+        }}
+      >
+        <div className="grid grid-cols-2 gap-y-3 text-left">
+          {[
+            ["👤 Ad", form.ad],
+            ["✂️ Hizmet", form.hizmet],
+            ["📅 Tarih", form.tarih],
+            ["🕐 Saat", form.saat],
+          ].map(([l, v]) => (
+            <div key={l}>
+              <div style={{ fontSize:10, color:"#555", marginBottom:2 }}>{l}</div>
+              <div style={{ fontWeight:700, color:"#e0e0e0", fontSize:13 }}>{v}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 w-full">
+        <a
+          href={waUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display:"flex", alignItems:"center", justifyContent:"center",
+            gap:8, padding:"16px", borderRadius:50,
+            background:"rgba(37,211,102,0.08)",
+            border:"1.5px solid rgba(37,211,102,0.35)",
+            color:"#25D366", fontWeight:700, fontSize:14, textDecoration:"none",
+          }}
+        >
+          💬 WhatsApp Mesajını Gönder
+        </a>
+        <button
+          onClick={() => { setDone(false); setForm({ ad:"",telefon:"",hizmet:"",tarih:"",saat:"",not:"" }); }}
+          style={{
+            padding:"14px", borderRadius:50,
+            background:"#0e0e0e", border:"1px solid #1e1e1e",
+            color:"#606060", fontWeight:600, fontSize:14, cursor:"pointer",
+          }}
+        >
+          Yeni Randevu Al
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-lg mx-auto px-5 py-7">
+      <div className="section-header">
+        <div className="section-label">✦ Online Randevu</div>
+        <h1 className="section-title">Randevu Al</h1>
+        <div className="section-underline" />
+        <p style={{ color:"#606060", fontSize:12, marginTop:8 }}>
+          Formu doldurun, WhatsApp ile onaylayın
+        </p>
+      </div>
+
+      {/* Hours notice */}
+      <div
+        style={{
+          background:"rgba(212,168,67,0.04)",
+          border:"1px solid rgba(212,168,67,0.12)",
+          borderRadius:14, padding:"12px 14px",
+          display:"flex", alignItems:"flex-start", gap:10,
+          marginBottom:24,
+        }}
+      >
+        <span style={{ fontSize:16, flexShrink:0 }}>🕐</span>
+        <div>
+          <div style={{ color:"#d4a843", fontWeight:700, fontSize:11, marginBottom:2 }}>
+            Çalışma Saatleri
+          </div>
+          <div style={{ color:"#666", fontSize:11, lineHeight:1.7 }}>
+            {SALON_INFO.workingHours.weekdays}<br/>
+            {SALON_INFO.workingHours.sunday}
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={submit} className="flex flex-col gap-4">
         {/* Name */}
         <div>
-          <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
+          <label style={{ fontSize:10, fontWeight:700, color:"#555", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:7 }}>
             Ad Soyad *
           </label>
-          <input
-            name="ad"
-            value={form.ad}
-            onChange={handleChange}
-            placeholder="Adınızı girin"
-            required
-            className="input-dark"
-          />
+          <input name="ad" value={form.ad} onChange={set} placeholder="Adınızı girin" required className="field" />
         </div>
 
         {/* Phone */}
         <div>
-          <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
+          <label style={{ fontSize:10, fontWeight:700, color:"#555", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:7 }}>
             Telefon *
           </label>
-          <input
-            name="telefon"
-            value={form.telefon}
-            onChange={handleChange}
-            placeholder="0 5XX XXX XX XX"
-            type="tel"
-            required
-            className="input-dark"
-          />
+          <input name="telefon" value={form.telefon} onChange={set} placeholder="0 5XX XXX XX XX" type="tel" required className="field" />
         </div>
 
         {/* Service */}
         <div>
-          <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
+          <label style={{ fontSize:10, fontWeight:700, color:"#555", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:7 }}>
             Hizmet *
           </label>
-          <select
-            name="hizmet"
-            value={form.hizmet}
-            onChange={handleChange}
-            required
-            className="input-dark"
-            style={{ appearance: "none" }}
-          >
+          <select name="hizmet" value={form.hizmet} onChange={set} required className="field" style={{ appearance:"none", cursor:"pointer" }}>
             <option value="">Hizmet seçin</option>
             <optgroup label="— Tekil Hizmetler —">
-              {HIZMETLER.map((h) => (
-                <option key={h.id} value={h.ad}>
-                  {h.ikon} {h.ad}
-                </option>
-              ))}
+              {HIZMETLER.map((h) => <option key={h.id} value={h.ad}>{h.ikon} {h.ad}</option>)}
             </optgroup>
             <optgroup label="— Premium Paketler —">
-              {PAKETLER.map((p) => (
-                <option key={p.id} value={`${p.ad} Paketi`}>
-                  ★ {p.ad} Paketi — {p.fiyat}₺
-                </option>
-              ))}
+              {PAKETLER.map((p) => <option key={p.id} value={`${p.ad} Paketi`}>★ {p.ad} — {p.fiyat}₺</option>)}
             </optgroup>
           </select>
         </div>
 
         {/* Date & Time */}
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
           <div>
-            <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
+            <label style={{ fontSize:10, fontWeight:700, color:"#555", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:7 }}>
               Tarih *
             </label>
-            <input
-              name="tarih"
-              type="date"
-              value={form.tarih}
-              onChange={handleChange}
-              min={bugün}
-              required
-              className="input-dark"
-            />
+            <input name="tarih" type="date" value={form.tarih} onChange={set} min={today} required className="field" />
           </div>
           <div>
-            <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
+            <label style={{ fontSize:10, fontWeight:700, color:"#555", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:7 }}>
               Saat *
             </label>
-            <select
-              name="saat"
-              value={form.saat}
-              onChange={handleChange}
-              required
-              className="input-dark"
-              style={{ appearance: "none" }}
-            >
+            <select name="saat" value={form.saat} onChange={set} required className="field" style={{ appearance:"none", cursor:"pointer" }}>
               <option value="">Saat seçin</option>
-              {RANDEVU_SAATLERI.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
+              {RANDEVU_SAATLERI.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
         {/* Note */}
         <div>
-          <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">
-            Not (İsteğe bağlı)
+          <label style={{ fontSize:10, fontWeight:700, color:"#555", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:7 }}>
+            Not (isteğe bağlı)
           </label>
-          <textarea
-            name="not"
-            value={form.not}
-            onChange={handleChange}
-            placeholder="İsteklerinizi belirtin..."
-            rows={3}
-            className="input-dark resize-none"
-          />
+          <textarea name="not" value={form.not} onChange={set} placeholder="İsteklerinizi belirtin..." rows={3} className="field" style={{ resize:"none" }} />
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
-          disabled={!isValid}
+          disabled={!valid}
           style={{
-            background: isValid ? "linear-gradient(135deg, #FFD700, #B8960C)" : "#1a1a1a",
-            color: isValid ? "#000" : "#444",
-            border: isValid ? "none" : "1px solid #222",
+            padding:"17px", borderRadius:50, marginTop:4,
+            background: valid ? "linear-gradient(135deg,#FFD700,#d4a843,#8a6a1a)" : "#161616",
+            color: valid ? "#000" : "#404040",
+            fontWeight: 800, fontSize: 15,
+            border: valid ? "none" : "1px solid #1e1e1e",
+            cursor: valid ? "pointer" : "not-allowed",
+            transition: "all 0.2s",
+            boxShadow: valid ? "0 4px 24px rgba(212,168,67,0.3)" : "none",
           }}
-          className="w-full py-4 rounded-2xl font-black text-sm mt-2 transition-all active:scale-95"
         >
-          {isValid ? "📲 Randevuyu WhatsApp'tan Gönder" : "Lütfen tüm alanları doldurun"}
+          {valid ? "📲 Randevuyu WhatsApp'tan Gönder" : "Lütfen tüm alanları doldurun"}
         </button>
 
-        <p className="text-[#555] text-xs text-center">
-          Randevunuz WhatsApp üzerinden salonumuza iletilecektir.
-          <br />
+        <p style={{ color:"#404040", fontSize:11, textAlign:"center", lineHeight:1.6 }}>
+          Randevunuz WhatsApp üzerinden iletilecektir.<br/>
           Onay için sizi arayacağız.
         </p>
       </form>

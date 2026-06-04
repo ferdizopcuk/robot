@@ -2,251 +2,196 @@
 
 import { SALON_INFO } from "@/lib/data";
 
+const GUNLER = [
+  { gun: "Pazartesi", saat: "07:00 - 22:00" },
+  { gun: "Salı",      saat: "07:00 - 22:00" },
+  { gun: "Çarşamba",  saat: "07:00 - 22:00" },
+  { gun: "Perşembe",  saat: "07:00 - 22:00" },
+  { gun: "Cuma",      saat: "07:00 - 22:00" },
+  { gun: "Cumartesi", saat: "07:00 - 22:00" },
+  { gun: "Pazar",     saat: "12:00 - 20:00" },
+];
+
 export default function IletisimSayfasi() {
-  const whatsappUrl = `https://wa.me/${SALON_INFO.phone}?text=Merhaba%2C%20size%20ulaşmak%20istiyorum.`;
+  const WA = `https://wa.me/${SALON_INFO.phone}?text=Merhaba%2C%20size%20ula%C5%9Fmak%20istiyorum.`;
+
+  const bugunAdi = new Date().toLocaleDateString("tr-TR", { weekday: "long" });
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-6">
-      {/* Header */}
-      <div className="mb-7">
-        <span
-          style={{
-            background: "rgba(255,215,0,0.1)",
-            border: "1px solid rgba(255,215,0,0.3)",
-            color: "#FFD700",
-          }}
-          className="text-xs font-bold px-3 py-1 rounded-full tracking-widest uppercase"
-        >
-          ✦ İşletme Bilgileri
-        </span>
-        <h1
-          style={{ fontFamily: "'Playfair Display', serif" }}
-          className="text-3xl font-black text-white mt-3 mb-1"
-        >
-          İletişim
-        </h1>
-        <p className="text-[#888] text-sm">Bize ulaşın, randevu alın</p>
-        <div
-          style={{
-            width: 40,
-            height: 2,
-            background: "linear-gradient(135deg, #FFD700, #B8960C)",
-            marginTop: 10,
-          }}
-        />
+    <div className="max-w-lg mx-auto px-5 py-7">
+
+      <div className="section-header">
+        <div className="section-label">✦ İşletme Bilgileri</div>
+        <h1 className="section-title">İletişim</h1>
+        <div className="section-underline" />
       </div>
 
-      {/* Logo/Brand */}
+      {/* Brand card */}
       <div
         style={{
-          background: "linear-gradient(145deg, #0f0f0f, #151505)",
-          border: "1px solid rgba(255,215,0,0.2)",
-          borderRadius: 20,
+          background:"linear-gradient(145deg,#0f0f00,#0d0d00)",
+          border:"1px solid rgba(212,168,67,0.2)",
+          borderRadius:22,
+          padding:24, textAlign:"center",
+          position:"relative", overflow:"hidden",
+          marginBottom:20,
         }}
-        className="p-6 mb-5 text-center relative overflow-hidden"
       >
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"linear-gradient(90deg,transparent,#d4a843,transparent)" }} />
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:1, background:"linear-gradient(90deg,transparent,rgba(212,168,67,0.2),transparent)" }} />
+
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 2,
-            background: "linear-gradient(90deg, transparent, #FFD700, transparent)",
+            width:56, height:56, borderRadius:16,
+            background:"linear-gradient(135deg,#FFD700,#d4a843,#8a6a1a)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:28, margin:"0 auto 14px",
+            boxShadow:"0 4px 20px rgba(212,168,67,0.3)",
           }}
-        />
+        >
+          ✂️
+        </div>
         <div
           style={{
-            fontFamily: "'Playfair Display', serif",
-            background: "linear-gradient(135deg, #FFD700, #FFF176, #B8960C)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
+            fontFamily:"'Playfair Display',Georgia,serif",
+            fontSize:20, fontWeight:900,
+            background:"linear-gradient(135deg,#f0c96a,#FFD700,#d4a843,#8a6a1a)",
+            WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+            backgroundClip:"text", marginBottom:4,
           }}
-          className="text-2xl font-black mb-1"
         >
           SALOON FERDİ ZOPCUK
         </div>
-        <div className="text-[#666] text-xs tracking-widest uppercase">
-          Premium Erkek Kuaförü
+        <div style={{ fontSize:10, letterSpacing:"2.5px", color:"#404040", textTransform:"uppercase" }}>
+          Premium Erkek Kuaförü · Adana Çukurova
         </div>
       </div>
 
-      {/* Contact cards */}
-      <div className="flex flex-col gap-3 mb-6">
-        {/* Phone */}
-        <a
-          href={`tel:${SALON_INFO.phone}`}
-          style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 16 }}
-          className="flex items-center gap-4 p-4 active:scale-95 transition-all"
-        >
-          <div
+      {/* Contact links */}
+      <div className="flex flex-col gap-2.5 mb-7">
+        {[
+          {
+            href: `tel:${SALON_INFO.phone}`,
+            icon: "📞", label: "Telefon", value: SALON_INFO.phoneDisplay,
+            bg: "rgba(212,168,67,0.05)", border: "rgba(212,168,67,0.15)", color: "#d4a843",
+          },
+          {
+            href: WA, target: "_blank",
+            icon: "💬", label: "WhatsApp", value: SALON_INFO.phoneDisplay,
+            bg: "rgba(37,211,102,0.05)", border: "rgba(37,211,102,0.15)", color: "#25D366",
+          },
+          {
+            href: SALON_INFO.mapUrl, target: "_blank",
+            icon: "📍", label: "Adres", value: SALON_INFO.addressFull,
+            bg: "rgba(248,113,113,0.05)", border: "rgba(248,113,113,0.15)", color: "#f87171",
+          },
+          {
+            href: "#",
+            icon: "📸", label: "Instagram", value: SALON_INFO.instagram,
+            bg: "rgba(192,132,252,0.05)", border: "rgba(192,132,252,0.15)", color: "#c084fc",
+          },
+        ].map((item) => (
+          <a
+            key={item.label}
+            href={item.href}
+            target={(item as {target?: string}).target}
+            rel={(item as {target?: string}).target === "_blank" ? "noopener noreferrer" : undefined}
             style={{
-              background: "rgba(255,215,0,0.1)",
-              border: "1px solid rgba(255,215,0,0.2)",
-              width: 48,
-              height: 48,
-              borderRadius: 14,
+              background: item.bg,
+              border: `1px solid ${item.border}`,
+              borderRadius: 16,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              padding: "14px 16px",
+              textDecoration: "none",
+              transition: "all 0.2s",
             }}
-            className="flex items-center justify-center text-2xl flex-shrink-0"
           >
-            📞
-          </div>
-          <div className="flex-1">
-            <div className="text-[#666] text-xs mb-0.5">Telefon</div>
-            <div style={{ color: "#FFD700" }} className="font-bold text-sm">
-              {SALON_INFO.phoneDisplay}
+            <div
+              style={{
+                width: 44, height: 44, borderRadius: 13, flexShrink: 0,
+                background: `${item.color}15`,
+                border: `1px solid ${item.color}25`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 20,
+              }}
+            >
+              {item.icon}
             </div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </a>
-
-        {/* WhatsApp */}
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            background: "rgba(37,211,102,0.06)",
-            border: "1px solid rgba(37,211,102,0.2)",
-            borderRadius: 16,
-          }}
-          className="flex items-center gap-4 p-4 active:scale-95 transition-all"
-        >
-          <div
-            style={{
-              background: "rgba(37,211,102,0.1)",
-              border: "1px solid rgba(37,211,102,0.2)",
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-            }}
-            className="flex items-center justify-center text-2xl flex-shrink-0"
-          >
-            💬
-          </div>
-          <div className="flex-1">
-            <div className="text-[#666] text-xs mb-0.5">WhatsApp</div>
-            <div style={{ color: "#25D366" }} className="font-bold text-sm">
-              {SALON_INFO.phoneDisplay}
+            <div className="flex-1 min-w-0">
+              <div style={{ fontSize: 10, color: "#505050", marginBottom: 2, letterSpacing: "0.5px" }}>
+                {item.label}
+              </div>
+              <div
+                style={{
+                  fontWeight: 700, fontSize: 13, color: item.color,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}
+              >
+                {item.value}
+              </div>
             </div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </a>
-
-        {/* Address */}
-        <a
-          href={SALON_INFO.mapUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 16 }}
-          className="flex items-center gap-4 p-4 active:scale-95 transition-all"
-        >
-          <div
-            style={{
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-            }}
-            className="flex items-center justify-center text-2xl flex-shrink-0"
-          >
-            📍
-          </div>
-          <div className="flex-1">
-            <div className="text-[#666] text-xs mb-0.5">Adres</div>
-            <div className="text-white font-semibold text-sm leading-relaxed">
-              {SALON_INFO.addressFull}
-            </div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </a>
-
-        {/* Instagram */}
-        <div
-          style={{
-            background: "rgba(131,58,180,0.06)",
-            border: "1px solid rgba(131,58,180,0.2)",
-            borderRadius: 16,
-          }}
-          className="flex items-center gap-4 p-4"
-        >
-          <div
-            style={{
-              background: "rgba(131,58,180,0.1)",
-              border: "1px solid rgba(131,58,180,0.2)",
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-            }}
-            className="flex items-center justify-center text-2xl flex-shrink-0"
-          >
-            📸
-          </div>
-          <div>
-            <div className="text-[#666] text-xs mb-0.5">Instagram</div>
-            <div style={{ color: "#c084fc" }} className="font-bold text-sm">
-              {SALON_INFO.instagram}
-            </div>
-          </div>
-        </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a2a2a" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        ))}
       </div>
 
       {/* Working Hours */}
       <div
-        style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 18 }}
-        className="p-5 mb-6"
+        style={{
+          background:"#0e0e0e",
+          border:"1px solid #1e1e1e",
+          borderRadius:20,
+          overflow:"hidden",
+          marginBottom:20,
+        }}
       >
-        <h2 className="text-white font-black mb-4 flex items-center gap-2">
-          <span>🕐</span> Çalışma Saatleri
-        </h2>
-        <div className="flex flex-col gap-3">
-          {[
-            { gun: "Pazartesi", saat: "07:00 - 22:00", acik: true },
-            { gun: "Salı", saat: "07:00 - 22:00", acik: true },
-            { gun: "Çarşamba", saat: "07:00 - 22:00", acik: true },
-            { gun: "Perşembe", saat: "07:00 - 22:00", acik: true },
-            { gun: "Cuma", saat: "07:00 - 22:00", acik: true },
-            { gun: "Cumartesi", saat: "07:00 - 22:00", acik: true },
-            { gun: "Pazar", saat: "12:00 - 20:00", acik: true },
-          ].map(({ gun, saat, acik }) => {
-            const today = new Date().toLocaleDateString("tr-TR", { weekday: "long" });
-            const isToday = today === gun;
+        <div
+          style={{
+            padding:"16px 18px 14px",
+            borderBottom:"1px solid #1a1a1a",
+            display:"flex", alignItems:"center", gap:8,
+          }}
+        >
+          <span style={{ fontSize:16 }}>🕐</span>
+          <span style={{ fontWeight:800, fontSize:15, color:"#e0e0e0" }}>Çalışma Saatleri</span>
+        </div>
+        <div>
+          {GUNLER.map(({ gun, saat }, i) => {
+            const isToday = bugunAdi === gun;
             return (
               <div
                 key={gun}
                 style={{
-                  background: isToday ? "rgba(255,215,0,0.06)" : "transparent",
-                  border: isToday ? "1px solid rgba(255,215,0,0.15)" : "1px solid transparent",
-                  borderRadius: 10,
+                  display:"flex",
+                  alignItems:"center",
+                  justifyContent:"space-between",
+                  padding:"11px 18px",
+                  background: isToday ? "rgba(212,168,67,0.05)" : "transparent",
+                  borderBottom: i < GUNLER.length - 1 ? "1px solid #161616" : "none",
                 }}
-                className="flex items-center justify-between px-3 py-2"
               >
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: isToday ? "#FFD700" : "#ccc" }}
-                >
-                  {gun}
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ fontSize:13, fontWeight:600, color: isToday ? "#d4a843" : "#a0a0a0" }}>
+                    {gun}
+                  </span>
                   {isToday && (
-                    <span
-                      style={{ background: "#FFD700", color: "#000", fontSize: 9 }}
-                      className="ml-2 px-1.5 py-0.5 rounded-full font-black"
-                    >
+                    <span style={{
+                      background:"linear-gradient(135deg,#FFD700,#d4a843)",
+                      color:"#000", fontSize:7, fontWeight:900,
+                      padding:"2px 6px", borderRadius:50, letterSpacing:"1px",
+                    }}>
                       BUGÜN
                     </span>
                   )}
-                </span>
-                <span
-                  className="text-sm font-bold"
-                  style={{ color: acik ? "#34d399" : "#ff4444" }}
-                >
+                </div>
+                <span style={{
+                  fontWeight:700, fontSize:13,
+                  color: gun === "Pazar" ? "#60a5fa" : "#27c982",
+                }}>
                   {saat}
                 </span>
               </div>
@@ -255,26 +200,37 @@ export default function IletisimSayfasi() {
         </div>
       </div>
 
-      {/* Map button */}
-      <a
-        href={SALON_INFO.mapUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ background: "rgba(239,68,68,0.08)", border: "2px solid rgba(239,68,68,0.3)", color: "#f87171" }}
-        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm mb-3 active:scale-95 transition-all"
-      >
-        🗺️ Google Haritalar&apos;da Aç
-      </a>
-
-      <a
-        href={whatsappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ background: "rgba(37,211,102,0.08)", border: "2px solid rgba(37,211,102,0.3)", color: "#25D366" }}
-        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-sm active:scale-95 transition-all"
-      >
-        💬 WhatsApp&apos;tan Mesaj At
-      </a>
+      {/* Action buttons */}
+      <div className="flex flex-col gap-3">
+        <a
+          href={SALON_INFO.mapUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display:"flex", alignItems:"center", justifyContent:"center",
+            gap:8, padding:"16px", borderRadius:50,
+            background:"rgba(248,113,113,0.06)",
+            border:"1.5px solid rgba(248,113,113,0.25)",
+            color:"#f87171", fontWeight:700, fontSize:14, textDecoration:"none",
+          }}
+        >
+          🗺️ Google Haritalar&apos;da Aç
+        </a>
+        <a
+          href={WA}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display:"flex", alignItems:"center", justifyContent:"center",
+            gap:8, padding:"16px", borderRadius:50,
+            background:"rgba(37,211,102,0.06)",
+            border:"1.5px solid rgba(37,211,102,0.3)",
+            color:"#25D366", fontWeight:700, fontSize:14, textDecoration:"none",
+          }}
+        >
+          💬 WhatsApp&apos;tan Mesaj At
+        </a>
+      </div>
     </div>
   );
 }

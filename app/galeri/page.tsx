@@ -1,174 +1,108 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getYorumlar, saveYorum, deleteYorum, generateId } from "@/lib/storage";
+import { getYorumlar, saveYorum, generateId } from "@/lib/storage";
 import type { Yorum } from "@/lib/data";
 
-// Placeholder gallery images using CSS gradients
-const GALERI_ORNEKLERI = [
-  { id: 1, baslik: "Klasik Fade Kesim", tip: "onceSonra", renk1: "#1a1a2e", renk2: "#FFD700" },
-  { id: 2, baslik: "Modern Sakal Şekillendirme", tip: "hizmet", renk1: "#0f3460", renk2: "#e94560" },
-  { id: 3, baslik: "Pompadour Stil", tip: "onceSonra", renk1: "#16213e", renk2: "#f5a623" },
-  { id: 4, baslik: "ROYAL EXPERIENCE", tip: "paket", renk1: "#2d1b69", renk2: "#c084fc" },
-  { id: 5, baslik: "Saç + Sakal Combo", tip: "hizmet", renk1: "#1a3a2a", renk2: "#34d399" },
-  { id: 6, baslik: "Keratin Sonuçları", tip: "onceSonra", renk1: "#3a1a1a", renk2: "#fbbf24" },
+const GALERI = [
+  { id:1, baslik:"Klasik Fade Kesim",        tip:"onceSonra", g1:"#1a0a2e", g2:"#d4a843" },
+  { id:2, baslik:"Modern Sakal Şekillendirme",tip:"hizmet",   g1:"#0a1a2e", g2:"#4a9eff" },
+  { id:3, baslik:"Pompadour Stil",            tip:"onceSonra", g1:"#1a1a0a", g2:"#f0c96a" },
+  { id:4, baslik:"ROYAL EXPERIENCE",          tip:"paket",    g1:"#1a0a2e", g2:"#c084fc" },
+  { id:5, baslik:"Saç + Sakal Combo",         tip:"hizmet",   g1:"#0a1a10", g2:"#27c982" },
+  { id:6, baslik:"Keratin Sonuçları",         tip:"onceSonra", g1:"#1a0a0a", g2:"#f59e0b" },
 ];
 
-const YILDIZLAR = [1, 2, 3, 4, 5];
+const CATS = [
+  { key:"hepsi",    label:"Tümü" },
+  { key:"onceSonra",label:"Önce/Sonra" },
+  { key:"hizmet",   label:"Hizmet" },
+  { key:"paket",    label:"Paket" },
+] as const;
 
 export default function GaleriSayfasi() {
   const [yorumlar, setYorumlar] = useState<Yorum[]>([]);
-  const [yorumFormAcik, setYorumFormAcik] = useState(false);
-  const [yorumForm, setYorumForm] = useState({
-    musteriAdi: "",
-    puan: 5,
-    yorum: "",
-    hizmet: "",
-  });
-  const [aktifKategori, setAktifKategori] = useState<"hepsi" | "onceSonra" | "hizmet" | "paket">("hepsi");
+  const [formAcik, setFormAcik] = useState(false);
+  const [fy, setFy] = useState({ musteriAdi:"", puan:5, yorum:"", hizmet:"" });
+  const [cat, setCat] = useState<"hepsi"|"onceSonra"|"hizmet"|"paket">("hepsi");
 
-  useEffect(() => {
+  useEffect(() => { setYorumlar(getYorumlar()); }, []);
+
+  const filtered = cat === "hepsi" ? GALERI : GALERI.filter((g) => g.tip === cat);
+
+  const saveY = () => {
+    if (!fy.musteriAdi.trim() || !fy.yorum.trim()) return;
+    saveYorum({ id:generateId(), ...fy, tarih:new Date().toLocaleDateString("tr-TR") });
     setYorumlar(getYorumlar());
-  }, []);
-
-  const yenile = () => setYorumlar(getYorumlar());
-
-  const filtreliGaleri =
-    aktifKategori === "hepsi"
-      ? GALERI_ORNEKLERI
-      : GALERI_ORNEKLERI.filter((g) => g.tip === aktifKategori);
-
-  const handleYorumKaydet = () => {
-    if (!yorumForm.musteriAdi.trim() || !yorumForm.yorum.trim()) return;
-    saveYorum({
-      id: generateId(),
-      musteriAdi: yorumForm.musteriAdi,
-      puan: yorumForm.puan,
-      yorum: yorumForm.yorum,
-      hizmet: yorumForm.hizmet,
-      tarih: new Date().toLocaleDateString("tr-TR"),
-    });
-    yenile();
-    setYorumFormAcik(false);
-    setYorumForm({ musteriAdi: "", puan: 5, yorum: "", hizmet: "" });
+    setFormAcik(false);
+    setFy({ musteriAdi:"", puan:5, yorum:"", hizmet:"" });
   };
 
-  const ortPuan =
-    yorumlar.length > 0
-      ? yorumlar.reduce((s, y) => s + y.puan, 0) / yorumlar.length
-      : 5;
+  const ort = yorumlar.length ? yorumlar.reduce((s, y) => s + y.puan, 0) / yorumlar.length : 5;
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-6">
+    <div className="max-w-lg mx-auto px-5 py-7">
+
       {/* Header */}
-      <div className="mb-7">
-        <span
-          style={{
-            background: "rgba(255,215,0,0.1)",
-            border: "1px solid rgba(255,215,0,0.3)",
-            color: "#FFD700",
-          }}
-          className="text-xs font-bold px-3 py-1 rounded-full tracking-widest uppercase"
-        >
-          ✦ Galeri & Yorumlar
-        </span>
-        <h1
-          style={{ fontFamily: "'Playfair Display', serif" }}
-          className="text-3xl font-black text-white mt-3 mb-1"
-        >
-          Galeri
-        </h1>
-        <p className="text-[#888] text-sm">Çalışmalarımız ve müşteri deneyimleri</p>
-        <div
-          style={{
-            width: 40,
-            height: 2,
-            background: "linear-gradient(135deg, #FFD700, #B8960C)",
-            marginTop: 10,
-          }}
-        />
+      <div className="section-header">
+        <div className="section-label">✦ Çalışmalar & Deneyimler</div>
+        <h1 className="section-title">Galeri</h1>
+        <div className="section-underline" />
       </div>
 
-      {/* Gallery filter */}
-      <div
-        style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 14 }}
-        className="flex p-1 mb-5"
-      >
-        {(["hepsi", "onceSonra", "hizmet", "paket"] as const).map((f) => {
-          const labels = { hepsi: "Tümü", onceSonra: "Önce/Sonra", hizmet: "Hizmet", paket: "Paket" };
-          return (
-            <button
-              key={f}
-              onClick={() => setAktifKategori(f)}
-              style={{
-                background: aktifKategori === f ? "linear-gradient(135deg, #FFD700, #B8960C)" : "transparent",
-                color: aktifKategori === f ? "#000" : "#666",
-              }}
-              className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
-            >
-              {labels[f]}
-            </button>
-          );
-        })}
+      {/* Category filter */}
+      <div style={{ background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:14, display:"flex", padding:4, gap:3, marginBottom:18 }}>
+        {CATS.map((c) => (
+          <button
+            key={c.key}
+            onClick={() => setCat(c.key)}
+            style={{
+              flex:1, padding:"9px 4px", borderRadius:10, border:"none",
+              background: cat === c.key ? "linear-gradient(135deg,#FFD700,#d4a843)" : "transparent",
+              color: cat === c.key ? "#000" : "#505050",
+              fontWeight: cat === c.key ? 800 : 600,
+              fontSize:10, cursor:"pointer", transition:"all 0.2s",
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
       </div>
 
       {/* Gallery grid */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        {filtreliGaleri.map((item) => (
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:32 }}>
+        {filtered.map((item) => (
           <div
             key={item.id}
+            className="hover-lift"
             style={{
-              borderRadius: 16,
-              overflow: "hidden",
-              height: 160,
-              position: "relative",
-              background: `linear-gradient(135deg, ${item.renk1}, ${item.renk2})`,
-              border: "1px solid rgba(255,255,255,0.05)",
+              height:160, borderRadius:18,
+              background:`linear-gradient(135deg,${item.g1},${item.g2}55)`,
+              border:"1px solid rgba(255,255,255,0.04)",
+              position:"relative", overflow:"hidden", cursor:"pointer",
             }}
-            className="card-hover cursor-pointer"
           >
-            {/* Decorative pattern */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: `radial-gradient(circle at 80% 20%, ${item.renk2}40, transparent 60%)`,
-              }}
-            />
-            {/* Barber pole decoration */}
-            <div
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                width: 28,
-                height: 28,
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 14,
-              }}
-            >
+            <div style={{
+              position:"absolute", inset:0,
+              background:`radial-gradient(circle at 75% 25%,${item.g2}40,transparent 65%)`,
+            }} />
+            {/* type badge */}
+            <div style={{
+              position:"absolute", top:10, right:10,
+              background:"rgba(0,0,0,0.5)", borderRadius:8,
+              width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:13, backdropFilter:"blur(4px)",
+            }}>
               {item.tip === "onceSonra" ? "↔️" : item.tip === "paket" ? "👑" : "✂️"}
             </div>
-            {/* Label */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
-                padding: "24px 12px 12px",
-              }}
-            >
-              <div className="text-white text-xs font-bold">{item.baslik}</div>
-              <div
-                style={{ color: item.renk2, opacity: 0.8 }}
-                className="text-xs capitalize mt-0.5"
-              >
+            {/* label */}
+            <div style={{
+              position:"absolute", bottom:0, left:0, right:0,
+              background:"linear-gradient(transparent,rgba(0,0,0,0.88))",
+              padding:"24px 12px 12px",
+            }}>
+              <div style={{ color:"#fff", fontSize:11, fontWeight:700, lineHeight:1.3 }}>{item.baslik}</div>
+              <div style={{ color:item.g2, fontSize:9, marginTop:3, textTransform:"capitalize", opacity:0.8 }}>
                 {item.tip === "onceSonra" ? "Önce / Sonra" : item.tip}
               </div>
             </div>
@@ -179,191 +113,146 @@ export default function GaleriSayfasi() {
       {/* Add photo placeholder */}
       <div
         style={{
-          background: "#0f0f0f",
-          border: "2px dashed #2a2a2a",
-          borderRadius: 16,
-          padding: "24px",
-          textAlign: "center",
-          marginBottom: "32px",
+          background:"#080808", border:"2px dashed #1a1a1a",
+          borderRadius:18, padding:28, textAlign:"center", marginBottom:32,
         }}
       >
-        <div className="text-3xl mb-2">📸</div>
-        <div className="text-[#555] text-sm font-semibold">Yeni fotoğraf ekle</div>
-        <div className="text-[#444] text-xs mt-1">Yakında aktif olacak</div>
+        <div style={{ fontSize:28, marginBottom:8, opacity:0.3 }}>📸</div>
+        <div style={{ color:"#404040", fontSize:12, fontWeight:600 }}>Yeni fotoğraf ekle</div>
+        <div style={{ color:"#2a2a2a", fontSize:10, marginTop:3 }}>Yakında aktif olacak</div>
       </div>
 
-      {/* Reviews section */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-black text-white">Yorumlar</h2>
-            <div
-              style={{
-                width: 40,
-                height: 2,
-                background: "linear-gradient(135deg, #FFD700, #B8960C)",
-                marginTop: 6,
-              }}
-            />
-          </div>
-          <button
-            onClick={() => setYorumFormAcik(true)}
-            style={{ background: "rgba(255,215,0,0.1)", border: "1px solid rgba(255,215,0,0.3)", color: "#FFD700" }}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold"
-          >
-            + Yorum Yap
-          </button>
-        </div>
+      {/* Section divider */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:24, opacity:0.25 }}>
+        <div style={{ flex:1, height:1, background:"linear-gradient(90deg,transparent,#d4a843)" }} />
+        <span style={{ color:"#d4a843", fontSize:12 }}>✦</span>
+        <div style={{ flex:1, height:1, background:"linear-gradient(90deg,#d4a843,transparent)" }} />
+      </div>
 
-        {/* Rating summary */}
-        <div
-          style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 16 }}
-          className="p-4 flex items-center gap-4 mb-4"
+      {/* Reviews header */}
+      <div className="flex items-end justify-between mb-5">
+        <div className="section-header" style={{ marginBottom:0 }}>
+          <div className="section-label">✦ Müşteri Yorumları</div>
+          <h2 className="section-title">Değerlendirmeler</h2>
+          <div className="section-underline" />
+        </div>
+        <button
+          onClick={() => setFormAcik(true)}
+          style={{
+            background:"rgba(212,168,67,0.08)",
+            border:"1px solid rgba(212,168,67,0.2)",
+            color:"#d4a843",
+            fontSize:11, fontWeight:700,
+            padding:"8px 12px", borderRadius:50, cursor:"pointer",
+            flexShrink:0,
+          }}
         >
-          <div className="text-center">
-            <div style={{ color: "#FFD700" }} className="text-4xl font-black">
-              {ortPuan.toFixed(1)}
-            </div>
-            <div className="flex gap-0.5 justify-center mt-1">
-              {YILDIZLAR.map((s) => (
-                <span
-                  key={s}
-                  style={{ color: s <= Math.round(ortPuan) ? "#FFD700" : "#333" }}
-                  className="text-base"
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-            <div className="text-[#666] text-xs mt-1">{yorumlar.length} yorum</div>
-          </div>
-          <div className="flex-1">
-            {YILDIZLAR.reverse().map((s) => {
-              const sayi = yorumlar.filter((y) => y.puan === s).length;
-              const yuzde = yorumlar.length > 0 ? (sayi / yorumlar.length) * 100 : 0;
-              return (
-                <div key={s} className="flex items-center gap-2 mb-1">
-                  <span className="text-xs text-[#666] w-3">{s}</span>
-                  <span className="text-[#FFD700] text-xs">★</span>
-                  <div
-                    style={{ background: "#1a1a1a", borderRadius: 4, flex: 1, height: 6 }}
-                  >
-                    <div
-                      style={{
-                        width: `${yuzde}%`,
-                        height: "100%",
-                        background: "linear-gradient(135deg, #FFD700, #B8960C)",
-                        borderRadius: 4,
-                        transition: "width 0.5s ease",
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-[#555] w-4">{sayi}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+          + Yorum Yap
+        </button>
+      </div>
 
-        {/* Review list */}
-        <div className="flex flex-col gap-3">
-          {yorumlar.length === 0 ? (
-            <div className="text-center py-8 text-[#555]">
-              <div className="text-3xl mb-2">💬</div>
-              <div className="text-sm">Henüz yorum yok</div>
-              <div className="text-xs mt-1">İlk yorumu siz yapın!</div>
-            </div>
-          ) : (
-            yorumlar.map((yorum) => (
-              <div
-                key={yorum.id}
-                style={{ background: "#111", border: "1px solid #1f1f1f", borderRadius: 16 }}
-                className="p-4"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div
-                      style={{
-                        background: "linear-gradient(135deg, #FFD700, #B8960C)",
-                        width: 36,
-                        height: 36,
-                        borderRadius: "50%",
-                        flexShrink: 0,
-                      }}
-                      className="flex items-center justify-center text-black font-black text-sm"
-                    >
-                      {yorum.musteriAdi[0]}
-                    </div>
-                    <div>
-                      <div className="font-bold text-sm text-white">{yorum.musteriAdi}</div>
-                      {yorum.hizmet && <div className="text-[#666] text-xs">{yorum.hizmet}</div>}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex gap-0.5">
-                      {YILDIZLAR.map((s) => (
-                        <span key={s} style={{ color: s <= yorum.puan ? "#FFD700" : "#333" }} className="text-sm">
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <div className="text-[#555] text-xs mt-0.5">{yorum.tarih}</div>
-                  </div>
-                </div>
-                <p className="text-[#aaa] text-sm leading-relaxed">&ldquo;{yorum.yorum}&rdquo;</p>
-              </div>
-            ))
-          )}
+      {/* Rating overview */}
+      <div style={{ background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:18, padding:18, marginBottom:16, display:"flex", alignItems:"center", gap:16 }}>
+        <div style={{ textAlign:"center", minWidth:70 }}>
+          <div style={{ fontSize:36, fontWeight:900, color:"#d4a843", lineHeight:1 }}>{ort.toFixed(1)}</div>
+          <div style={{ display:"flex", gap:2, justifyContent:"center", marginTop:4 }}>
+            {[1,2,3,4,5].map((s) => (
+              <span key={s} style={{ color: s <= Math.round(ort) ? "#d4a843" : "#1e1e1e", fontSize:14 }}>★</span>
+            ))}
+          </div>
+          <div style={{ fontSize:9, color:"#505050", marginTop:4 }}>{yorumlar.length} yorum</div>
         </div>
+        <div style={{ flex:1 }}>
+          {[5,4,3,2,1].map((s) => {
+            const sayi = yorumlar.filter((y) => y.puan === s).length;
+            const pct  = yorumlar.length ? (sayi / yorumlar.length) * 100 : 0;
+            return (
+              <div key={s} style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
+                <span style={{ fontSize:10, color:"#505050", width:8 }}>{s}</span>
+                <span style={{ color:"#d4a843", fontSize:10 }}>★</span>
+                <div style={{ flex:1, height:5, background:"#161616", borderRadius:3 }}>
+                  <div style={{ width:`${pct}%`, height:"100%", background:"linear-gradient(90deg,#d4a843,#8a6a1a)", borderRadius:3, transition:"width 0.4s" }} />
+                </div>
+                <span style={{ fontSize:9, color:"#404040", width:12 }}>{sayi}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Review list */}
+      <div className="flex flex-col gap-3">
+        {yorumlar.length === 0 ? (
+          <div style={{ textAlign:"center", padding:"36px 0", color:"#404040" }}>
+            <div style={{ fontSize:32, marginBottom:8 }}>💬</div>
+            <div style={{ fontSize:14, fontWeight:600 }}>Henüz yorum yok</div>
+            <div style={{ fontSize:11, marginTop:4 }}>İlk yorumu siz yapın!</div>
+          </div>
+        ) : yorumlar.map((y) => (
+          <div key={y.id} style={{ background:"#0e0e0e", border:"1px solid #1e1e1e", borderRadius:18, padding:18 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{
+                  width:40, height:40, borderRadius:12,
+                  background:"linear-gradient(135deg,#FFD700,#8a6a1a)",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  color:"#000", fontWeight:900, fontSize:15, flexShrink:0,
+                }}>
+                  {y.musteriAdi[0]}
+                </div>
+                <div>
+                  <div style={{ fontWeight:700, color:"#e0e0e0", fontSize:14 }}>{y.musteriAdi}</div>
+                  {y.hizmet && <div style={{ fontSize:10, color:"#505050", marginTop:1 }}>{y.hizmet}</div>}
+                </div>
+              </div>
+              <div style={{ textAlign:"right" }}>
+                <div style={{ display:"flex", gap:2 }}>
+                  {[1,2,3,4,5].map((s) => <span key={s} style={{ color: s <= y.puan ? "#d4a843" : "#1e1e1e", fontSize:13 }}>★</span>)}
+                </div>
+                <div style={{ fontSize:9, color:"#404040", marginTop:2 }}>{y.tarih}</div>
+              </div>
+            </div>
+            <p style={{ color:"#808080", fontSize:13, lineHeight:1.7, fontStyle:"italic" }}>&ldquo;{y.yorum}&rdquo;</p>
+          </div>
+        ))}
       </div>
 
       {/* Review form modal */}
-      {yorumFormAcik && (
+      {formAcik && (
         <div
-          style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
-          className="fixed inset-0 z-50 flex items-end justify-center p-4"
-          onClick={(e) => e.target === e.currentTarget && setYorumFormAcik(false)}
+          style={{ background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", position:"fixed", inset:0, zIndex:50, display:"flex", alignItems:"flex-end", justifyContent:"center", padding:12 }}
+          onClick={(e) => e.target === e.currentTarget && setFormAcik(false)}
         >
           <div
-            style={{ background: "#111", border: "1px solid #2a2a2a", borderRadius: "24px 24px 0 0" }}
-            className="w-full max-w-lg pb-8"
+            className="anim-slide-in"
+            style={{
+              background:"#0e0e0e", border:"1px solid #242424",
+              borderRadius:"22px 22px 0 0", width:"100%", maxWidth:468,
+              paddingBottom:32,
+            }}
           >
-            <div className="p-5 border-b border-[#1f1f1f] flex items-center justify-between">
-              <h2 className="font-black text-white">Yorum Yap</h2>
-              <button
-                onClick={() => setYorumFormAcik(false)}
-                style={{ background: "#1a1a1a", color: "#888" }}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-              >
-                ×
-              </button>
+            <div style={{ padding:"16px 18px", borderBottom:"1px solid #161616", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <span style={{ fontWeight:800, color:"#e0e0e0", fontSize:16 }}>Yorum Yap</span>
+              <button onClick={() => setFormAcik(false)} style={{ width:28, height:28, borderRadius:"50%", background:"#1a1a1a", border:"none", color:"#666", fontSize:16, cursor:"pointer" }}>×</button>
             </div>
-            <div className="p-5 flex flex-col gap-4">
+            <div style={{ padding:"18px 18px 0", display:"flex", flexDirection:"column", gap:14 }}>
               <div>
-                <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">Adınız</label>
-                <input
-                  value={yorumForm.musteriAdi}
-                  onChange={(e) => setYorumForm((p) => ({ ...p, musteriAdi: e.target.value }))}
-                  placeholder="Ad Soyad"
-                  className="input-dark"
-                />
+                <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:6 }}>Adınız</label>
+                <input value={fy.musteriAdi} onChange={(e) => setFy((p) => ({ ...p, musteriAdi:e.target.value }))} placeholder="Ad Soyad" className="field" />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#888] mb-2 block uppercase tracking-wider">Puanınız</label>
-                <div className="flex gap-2">
-                  {YILDIZLAR.map((s) => (
+                <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:8 }}>Puanınız</label>
+                <div style={{ display:"flex", gap:6 }}>
+                  {[1,2,3,4,5].map((s) => (
                     <button
                       key={s}
-                      onClick={() => setYorumForm((p) => ({ ...p, puan: s }))}
+                      onClick={() => setFy((p) => ({ ...p, puan:s }))}
                       style={{
-                        fontSize: 32,
-                        color: s <= yorumForm.puan ? "#FFD700" : "#333",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        transform: s <= yorumForm.puan ? "scale(1.1)" : "scale(1)",
+                        fontSize:30, color: s <= fy.puan ? "#d4a843" : "#1e1e1e",
+                        background:"none", border:"none", cursor:"pointer",
+                        transform: s <= fy.puan ? "scale(1.1)" : "scale(1)",
+                        transition:"all 0.15s",
                       }}
                     >
                       ★
@@ -373,36 +262,26 @@ export default function GaleriSayfasi() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">Aldığınız Hizmet</label>
-                <input
-                  value={yorumForm.hizmet}
-                  onChange={(e) => setYorumForm((p) => ({ ...p, hizmet: e.target.value }))}
-                  placeholder="Örn: SIGNATURE Paket"
-                  className="input-dark"
-                />
+                <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:6 }}>Aldığınız Hizmet</label>
+                <input value={fy.hizmet} onChange={(e) => setFy((p) => ({ ...p, hizmet:e.target.value }))} placeholder="Örn: SIGNATURE Paket" className="field" />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-[#888] mb-1.5 block uppercase tracking-wider">Yorumunuz</label>
-                <textarea
-                  value={yorumForm.yorum}
-                  onChange={(e) => setYorumForm((p) => ({ ...p, yorum: e.target.value }))}
-                  placeholder="Deneyiminizi paylaşın..."
-                  rows={3}
-                  className="input-dark resize-none"
-                />
+                <label style={{ fontSize:10, fontWeight:700, color:"#505050", letterSpacing:"1.5px", textTransform:"uppercase", display:"block", marginBottom:6 }}>Yorumunuz</label>
+                <textarea value={fy.yorum} onChange={(e) => setFy((p) => ({ ...p, yorum:e.target.value }))} placeholder="Deneyiminizi paylaşın..." rows={3} className="field" style={{ resize:"none" }} />
               </div>
 
               <button
-                onClick={handleYorumKaydet}
-                disabled={!yorumForm.musteriAdi.trim() || !yorumForm.yorum.trim()}
+                onClick={saveY}
+                disabled={!fy.musteriAdi.trim() || !fy.yorum.trim()}
                 style={{
-                  background: yorumForm.musteriAdi.trim() && yorumForm.yorum.trim()
-                    ? "linear-gradient(135deg, #FFD700, #B8960C)"
-                    : "#1a1a1a",
-                  color: yorumForm.musteriAdi.trim() && yorumForm.yorum.trim() ? "#000" : "#444",
+                  padding:"16px", borderRadius:50,
+                  background: fy.musteriAdi.trim() && fy.yorum.trim() ? "linear-gradient(135deg,#FFD700,#d4a843)" : "#161616",
+                  color: fy.musteriAdi.trim() && fy.yorum.trim() ? "#000" : "#404040",
+                  fontWeight:800, fontSize:15, border:"none",
+                  cursor: fy.musteriAdi.trim() && fy.yorum.trim() ? "pointer" : "not-allowed",
+                  marginTop:4,
                 }}
-                className="w-full py-4 rounded-2xl font-black text-sm transition-all"
               >
                 Yorum Gönder
               </button>
