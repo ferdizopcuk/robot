@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#050505"/>
+  <rect width="512" height="512" rx="112" fill="url(#bg)" opacity="0.15"/>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a843"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0c96a"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8a6a1a"/>
+    </linearGradient>
+    <linearGradient id="gb" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8a6a1a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Scissors body -->
+  <!-- Left blade -->
+  <g transform="translate(256,256) rotate(-20)">
+    <ellipse cx="-60" cy="-30" rx="18" ry="18" fill="url(#g1)" stroke="#8a6a1a" stroke-width="2"/>
+    <rect x="-68" y="-30" width="120" height="14" rx="7" fill="url(#g1)"/>
+    <!-- left tip -->
+    <polygon points="52,-30 68,-23 52,-16" fill="#f0c96a"/>
+  </g>
+
+  <!-- Right blade -->
+  <g transform="translate(256,256) rotate(20)">
+    <ellipse cx="-60" cy="30" rx="18" ry="18" fill="url(#g1)" stroke="#8a6a1a" stroke-width="2"/>
+    <rect x="-68" y="16" width="120" height="14" rx="7" fill="url(#g1)"/>
+    <!-- right tip -->
+    <polygon points="52,30 68,23 52,36" fill="#f0c96a"/>
+  </g>
+
+  <!-- Center screw -->
+  <circle cx="256" cy="256" r="10" fill="#050505"/>
+  <circle cx="256" cy="256" r="6" fill="url(#gb)"/>
+
+  <!-- Decorative lines bottom -->
+  <rect x="120" y="360" width="272" height="2" rx="1" fill="url(#g1)" opacity="0.4"/>
+  <rect x="160" y="370" width="192" height="1.5" rx="1" fill="url(#g1)" opacity="0.25"/>
+
+  <!-- "SFZ" text mark -->
+  <text x="256" y="420" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="42" letter-spacing="4" fill="url(#g1)" opacity="0.9">SFZ</text>
+</svg>

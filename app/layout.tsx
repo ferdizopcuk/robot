@@ -10,6 +10,23 @@ export const metadata: Metadata = {
   keywords:
     "berber adana, erkek kuaförü adana, çukurova berber, saç kesimi adana, sakal tıraşı adana",
   authors: [{ name: "Saloon Ferdi Zopcuk" }],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SFZ Salon",
+  },
+  icons: {
+    icon: [
+      { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-180.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "SALOON FERDİ ZOPCUK | Adana Çukurova",
     description: "Adana Çukurova'nın en premium erkek kuaförü",
